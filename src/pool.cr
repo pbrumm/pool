@@ -55,6 +55,7 @@ class Pool(T)
         rescue Exception
         end
       end
+      @size = @pool.size
     end
   end
 
