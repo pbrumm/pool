@@ -48,7 +48,7 @@ class Pool(T)
 
   def close_all
     @mutex.synchronize do
-      while connection = @pool.shift
+      while connection = @pool.shift?
         @size -= 1
         begin
           connection.close
@@ -89,11 +89,8 @@ class Pool(T)
   end
 
   private def start_one
+    pool << @block.call
     @size += 1
-    begin
-      pool << @block.call
-    ensure
-      @w.write(@buffer)
-    end
+    @w.write(@buffer)
   end
 end
