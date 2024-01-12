@@ -46,6 +46,18 @@ class Pool(T)
     end
   end
 
+  def close
+    @mutex.synchronize do
+      while connection = @pool.shift
+        @size -= 1
+        begin
+          connection.close
+        rescue Exception
+        end
+      end
+    end
+  end
+
   # Checkout an instance from the pool. Blocks until an instance is available if
   # all instances are busy. Eventually raises an `IO::Timeout` error.
   def checkout : T
@@ -78,7 +90,10 @@ class Pool(T)
 
   private def start_one
     @size += 1
-    pool << @block.call
-    @w.write(@buffer)
+    begin
+      pool << @block.call
+    ensure
+      @w.write(@buffer)
+    end
   end
 end

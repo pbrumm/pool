@@ -4,6 +4,8 @@ require "../src/pool"
 require "../src/connection"
 
 class Conn
+  def close
+  end
 end
 
 module AsyncTest

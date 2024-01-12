@@ -29,6 +29,12 @@ class ConnectionPool(T) < Pool(T)
     end
   end
 
+  def close
+    if conn = connections.delete(Fiber.current.object_id)
+      conn.try(&.close)
+    end
+  end
+
   # Yields a connection.
   #
   # If a connection was already checkout for the curent coroutine, it will be
