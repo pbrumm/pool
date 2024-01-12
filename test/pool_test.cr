@@ -23,15 +23,23 @@ class PoolTest < Minitest::Test
 
     pool.checkin(conn)
     assert_equal 5, pool.pending
+    pool.close_all
   end
 
   def test_waits_for_instance_to_be_unavailable
-    pool = Pool.new(capacity: 1, timeout: 0.01) { Conn.new }
+    pool = Pool.new(capacity: 10, timeout: 0.01) { Conn.new }
 
-    spawn do
-      assert conn = pool.checkout
-      sleep 0.001
-      pool.checkin(conn)
+    0.upto(10) do
+      spawn do
+        0.upto(1000) do
+          begin
+            assert conn = pool.checkout
+            sleep 0.001
+            pool.checkin(conn)
+          rescue IO::TimeoutError
+          end
+        end
+      end
     end
 
     async do
@@ -56,7 +64,7 @@ class PoolTest < Minitest::Test
     3.times { pool.checkout }
     assert_equal 3, pool.size
     assert_equal 97, pool.pending
-    pool.close
+    pool.close_all
     assert_equal 0, pool.size
   end
 

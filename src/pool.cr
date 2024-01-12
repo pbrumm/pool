@@ -46,7 +46,7 @@ class Pool(T)
     end
   end
 
-  def close
+  def close_all
     @mutex.synchronize do
       while connection = @pool.shift
         @size -= 1
